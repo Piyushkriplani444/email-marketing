@@ -14,10 +14,10 @@ function addFormatting(input) {
   return strippedText.trim();
 }
 
-export async function createData(promps) {
+export async function createData(prompt) {
   const model = googleAi.getGenerativeModel({ model: "gemini-pro" });
   const result = await model.generateContent(prompt);
-  const response = await result.response;
+  const response = result.response;
   const text = response.text();
   console.log(text);
   let finaltext = await addFormatting(text);

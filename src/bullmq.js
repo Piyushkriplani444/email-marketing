@@ -7,6 +7,7 @@ import { listTodaysUnreadEmails } from "./email.js";
 import { sendEmail } from "./email.js";
 
 const myQueue = new Queue("reachindex", { connection: redisConnection });
+const gmail = google.gmail({ version: "v1" });
 
 export async function addJobs(id, OauthClient) {
   console.log("oauth token", OauthClient);
@@ -85,7 +86,7 @@ export async function getEmail(auth, id) {
 export async function getData(oauthClient, id) {
   try {
     oauth2Client.setCredentials(oauthClient);
-    cosnt[(message, toEmail)] = await getEmail(oauth2Client, id);
+    const [messages, toEmail] = await getEmail(oauth2Client, id);
     await markEmailRead(oauth2Client, id);
     console.log("unread email", messages);
     const promt = `Categorizing the email based on the content and assign a label as follows -Interested,Not Interested,More information, on email ${JSON.stringify(

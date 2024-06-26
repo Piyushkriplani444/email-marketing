@@ -44,12 +44,17 @@ function getTodayDate() {
 }
 
 export async function listTodaysUnreadEmails(auth) {
-  console.log("listtoday");
+  console.log("listtoday", auth);
   const gmail = google.gmail({ version: "v1", auth });
+  console.log("ggggggggggggg", gmail);
   const todayDate = getTodayDate();
   const res = await gmail.users.messages.list({
     userId: "me",
-    q: `is:unread after:${todayDate}`,
+    // q: `rahulkriplani444@gmail.com`,
+    maxResults: 10,
+    q: "after:24h",
   });
+  console.log("xxxxxxx");
+  console.log(res);
   return res.data.messages || [];
 }

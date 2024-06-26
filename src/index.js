@@ -1,4 +1,4 @@
-import { narr, rep } from "./server.js";
+import { narr } from "./server.js";
 import { rep } from "./bullmq.js";
 // export enum hello{
 // "Interested"="I am intrested and lets hop on for a chat.",

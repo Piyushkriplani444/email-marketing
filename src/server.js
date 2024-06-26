@@ -56,6 +56,7 @@ app.get("/check-emails", async (req, res) => {
   if (!req.session.tokens) {
     return res.redirect("/auth/google");
   }
+  console.log("Token", req.session.tokens);
 
   oauth2Client.setCredentials(req.session.tokens);
 
