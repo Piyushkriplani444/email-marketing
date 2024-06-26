@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const apiKey = process.env.GENERATIVE_API_KEY;
-const googleAi = GoogleGenerativeAI(apiKey);
+const googleAi = new GoogleGenerativeAI(apiKey);
 
 function addFormatting(input) {
   let strippedText = input.replace(/^\s*[\*\-]\s*/gm, "");

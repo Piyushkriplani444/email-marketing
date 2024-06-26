@@ -3,23 +3,44 @@ import { redisConnection } from "./redisConfig.js";
 import { google } from "googleapis";
 import { createData } from "./useAi.js";
 import { oauth2Client } from "./oauthConfig.js";
+import { listTodaysUnreadEmails } from "./email.js";
+import { sendEmail } from "./email.js";
 
 const myQueue = new Queue("reachindex", { connection: redisConnection });
 
-async function addJobs(id, OauthClient) {
+export async function addJobs(id, OauthClient) {
   console.log("oauth token", OauthClient);
   await myQueue.add(id, { OauthClient, id });
   console.log("Added to Queue");
 }
-const worker = new Worker("reachindex", async (job) => {
-  try {
-    console.log("Worker running ");
-    await getData(job.data.OauthClient, job.data.id);
-    console.log("queue complete");
-  } catch (error) {}
+const worker = new Worker(
+  "reachindex",
+  async (job) => {
+    try {
+      console.log("Worker running ");
+      await getData(job.data.OauthClient, job.data.id);
+      console.log("queue complete");
+    } catch (error) {}
+  },
+  { connection: redisConnection }
+);
+
+worker.on("completed", (job) => {
+  console.log(`${job.id} has completed!`);
 });
 
-async function markEmailRead(auth, messageId) {
+worker.on("failed", (job, err) => {
+  console.log(`${job} has failed with ${err.message}`);
+});
+
+export async function add(messages, Oauthclient) {
+  console.log("inside");
+  for (let i = 0; i < messages.length; i++) {
+    await addJobs(messages[i].id, Oauthclient);
+  }
+}
+
+export async function markEmailRead(auth, messageId) {
   try {
     const modifyRequestBody = {
       removeLabelIds: ["UNREAD"],
@@ -39,7 +60,7 @@ async function markEmailRead(auth, messageId) {
   }
 }
 
-async function getEmail(auth, id) {
+export async function getEmail(auth, id) {
   const gmail = google.gmail({ version: "v1", auth });
   const result = await gmail.users.messages.get({
     userId: "me",
@@ -60,7 +81,8 @@ async function getEmail(auth, id) {
   }
   return [result.data, fromEmail];
 }
-async function getData(oauthClient, id) {
+
+export async function getData(oauthClient, id) {
   try {
     oauth2Client.setCredentials(oauthClient);
     cosnt[(message, toEmail)] = await getEmail(oauth2Client, id);
@@ -72,20 +94,25 @@ async function getData(oauthClient, id) {
     let result = await createData(promt);
     console.log(result, " from id : ", id);
     if (result == "Interested") {
-      await sendEmail(oauth2Client, toEmail, "hello there", hello.Interested);
+      await sendEmail(
+        oauth2Client,
+        toEmail,
+        "hello there",
+        "I am intrested and lets hop on for a chat."
+      );
     } else if (result == "Not Interested") {
       await sendEmail(
         oauth2Client,
         toEmail,
         "hello there",
-        hello["Not Interested"]
+        "sorry, i am not Intrested"
       );
     } else {
       await sendEmail(
         oauth2Client,
         toEmail,
         "hello there",
-        hello["More information"]
+        "I need more information please"
       );
     }
   } catch (error) {
@@ -93,6 +120,13 @@ async function getData(oauthClient, id) {
   }
 }
 
-module.exports = {
-  addJobs,
-};
+export async function rep(oauth) {
+  oauth2Client.setCredentials(oauth);
+  try {
+    const messages = await listTodaysUnreadEmails(oauth2Client);
+    console.log("Today's unread emails: ", messages);
+    await add(messages, oauth);
+  } catch (error) {
+    console.error("Error fetching emails:", error);
+  }
+}

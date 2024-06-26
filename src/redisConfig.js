@@ -7,8 +7,4 @@ const redisConfig = {
   enableReadyCheck: false,
 };
 
-const redisConnection = new Redis(redisConfig);
-
-module.exports = {
-  redisConnection,
-};
+export const redisConnection = new Redis(redisConfig);
