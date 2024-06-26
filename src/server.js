@@ -1,8 +1,8 @@
 import express from "express";
 import session from "express-session";
 import dotenv from "dotenv";
-import { listTodaysUnreadEmails, createEmail } from "./email.js";
-import { addJobs, add } from "./bullmq.js";
+import { listTodaysUnreadEmails } from "./email.js";
+import { add } from "./bullmq.js";
 import { google } from "googleapis";
 
 const OAuth2 = google.auth.OAuth2;
